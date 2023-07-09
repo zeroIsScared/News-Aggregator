@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEWS AGGREGATOR</title>
+    <style>
+        body {
+            background: #123;
+            color: white;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        #form input {
+            padding: 1em;
+            font-size: 150%;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1>NEWS AGGREGATOR</h1>
+    <h2>your favourit news app ;)</h2>
+
+    <form id="form">
+        <input type="text"
+         placeholder="keywords here..."
+         autofocus
+         onkeyup="onKeypress(event)">
+    </form>
+
+    <div id="content"></div>
+    <script>
+
+        
+
+        const config = [
+        // {
+        //     neme: 'Point MD News',
+        //     url: "https://point.md/ru/novosti/poisk/",
+        //     param: 'keyword',
+
+        //     domMapping: {
+        //         title: '.ujabma-3 h3',
+        //         image: '.ujabma-3 a'
+        //     }
+        // },
+        {
+            name: 'TV8 News',
+            url: "https://tv8.md/ro/search",
+            param: 'query',
+            baseURL : 'https://tv8.md',
+            domMapping: {
+                title: 'h1 ~ a > div > div',
+                image: 'h1 ~ a > img',
+                href: 'h1 ~ a'
+            }
+        },
+
+        {
+            neme: 'Publika News',
+            url: "https://www.publika.md/cauta/",
+            param: 'q',
+            baseURL : 'https://www.publika.md',
+
+            domMapping: {
+                title: 'section > div > div >article >figure ~ div >h3 >a',
+                image: 'section > div > div >article >figure > a > img',
+                href: 'section > div > div >article >figure > a'
+            }
+        }
+        ]
+        const formElelement = document.querySelector("form");
+        const inputElement = formElelement.firstElementChild;
+        const contentElement = document.querySelector('#content');
+
+        const onKeypress = (e) => {           
+
+            let keyPhrase = inputElement.value;
+        //   console.log(keyPhrase);
+        //   sendSearch(config[0], keyPhrase)
+        }
+
+        const onSubmit = (e) => {
+            e.preventDefault();
+            let keyPhrase = inputElement.value;
+          console.log(keyPhrase);
+          sendSearch(config, keyPhrase)
+
+        }
+
+        const render = (data, parent) => {
+            for( let i = 0; i<data.length; i++){
+                let div = document.createElement('div')
+
+                let h3 = document.createElement('h3');
+                h3.innerText = data[i]. title;
+                console.log(data[i]
+                )
+
+
+                let img = document.createElement('img')
+                img.src = data[i].img_src;
+
+                let href= document.createAttribute('href');
+                  console.log(data[i].href);
+                let a = document.createElement('a');
+              
+                let link= `${data[i].href}`;
+                    a.setAttribute(`href`, link);
+
+                a.appendChild(h3)
+                a.appendChild(img)
+                div.appendChild(a)
+                parent.appendChild(div)
+
+            }
+
+        }
+
+        const sendSearch = (config, keyPhrase) => 
+        {
+           // console.log(portal, config[1]);
+
+            for(i= 0; i < config.length; i++) {
+let portal = config[i];
+                 //1. prep the connection object
+            let xhr = new XMLHttpRequest();
+
+//2. setup
+xhr.open("GET", portal.url + '?' + portal.param + '=' + keyPhrase);
+
+// 3. a callback function
+xhr.onload = () => {
+    //parse THE DOC
+    let html  = xhr.response  // string
+    let parser = new DOMParser()
+    let htmlDOC = parser.parseFromString(html, 'text/html') //DOM structure
+    let  titleElements = htmlDOC.querySelectorAll(portal.domMapping.title)
+    let imageElements = htmlDOC.querySelectorAll(portal.domMapping.image)
+    let newsLink = htmlDOC.querySelectorAll(portal.domMapping.href)
+    let Url;
+
+     if(portal.baseURL == 'https://www.publika.md') {
+         Url=newsLink[i].getAttribute('href');
+        console.log(Url)
+
+       //return Url;
+    }
+       else {       
+       Url = `${portal.baseURL}${newsLink[i].getAttribute('href')}`;
+        console.log(Url);
+
+        //
+       // return Url ;
+       
+     }
+     console.log(Url)
+    // console.log(htmlDOC)
+    // console.log(titleElements)
+    console.log(newsLink )
+    console.log(imageElements.src)
+    // document.body.innerHTML = htmlDOC.body.innerHTML
+    let news = []
+    for(let i =0; i < titleElements.length; i++) {
+        news.push({
+            title: titleElements[i].innerText,
+            images_src: imageElements[i].src,
+            href: Url
+        })
+    }
+    console.log(news)
+    render(news, contentElement)
+}
+
+//4. send the request
+xhr.send()
+
+            }
+                 
+
+            }
+
+          
+
+        
+
+        inputElement.addEventListener("keyup", onKeypress);
+        formElelement.addEventListener('submit', onSubmit);
+
+        //HW! add another portal 
+        //HW2 reder output as link to the sourse
+        
+    </script>
+    
+</body>
+</html>
